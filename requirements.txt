@@ -1,0 +1,14 @@
+dill
+numpy
+pandas
+scikit_learn
+tabulate
+PyYAML
+folktables
+xgboost
+lightgbm
+gdown
+python-dotenv
+slackclient
+docker
+dis
