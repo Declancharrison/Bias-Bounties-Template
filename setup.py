@@ -35,11 +35,11 @@ def load_data():
             print(f"ERROR: {err}. Please retry!")
             continue
         try:
-            labels = data["label"]
-            data = data.drop(columns=["label"])
+            labels = data["Label"]
+            data = data.drop(columns=["Label"])
             break
         except Exception as err:
-            print(f"ERROR: {err}. Column \"label\" does not appear to exist!")
+            print(f"ERROR: {err}. Column \"Label\" does not appear to exist!")
             continue
 
     return split_save_data(data, labels), filename
@@ -274,14 +274,23 @@ def create_tmp():
     os.mkdir("tmp")
 
 def clean_up(data_path, teams_csv_path, base_model_path):
-    shutil.rmtree(".hidden", ignore_errors=True)
-    os.mkdir(".hidden")
-    shutil.move(data_path, f".hidden/{data_path}")
-    shutil.move(teams_csv_path, f".hidden/{teams_csv_path}")
+    append_to_file(".gitignore", data_path)
+    append_to_file(".gitignore", teams_csv_path)
     if base_model_path:
-        shutil.move(base_model_path, f".hidden/{base_model_path}")  
+        append_to_file(".gitignore", base_model_path)
     create_tmp()
     os.rename("initial_scripts", "scripts")
+    shutil.rmtree(".hidden", ignore_errors=True)
+    os.mkdir(".hidden")
+    try:
+        os.remove("example_data.csv")
+    except:
+        pass
+    try:
+        os.remove("example_teams.csv")
+    except:
+        pass
+    
     return 
 
 def main():
@@ -320,7 +329,7 @@ def main():
 
     print("\n--- (Step 6/n) Create .gitignore ---\n")
 
-    write_to_file(".gitignore", ".gitignore\n.ipynb_checkpoints\n.env\nusername_to_team.yaml\nleaderboard.csv\nsetup.ipynb\n__pycache__/\nteams/\nactions-runner/\nscripts/\ntmp/\ncontainer_tmp/\ndata/\nall_pairs/\nbias_bounty_venv/\n.hidden/\n")
+    write_to_file(".gitignore", ".gitignore\n.ipynb_checkpoints\n.env\nusername_to_team.yaml\nleaderboard.csv\nsetup.ipynb\n__pycache__/\nteams/\nactions-runner/\nscripts/\ntmp/\ncontainer_tmp/\ndata/\nall_pairs/\nbias_bounty_venv/\n.hidden/\nrunner.sh")
 
     print("\n--- (Step 7/n) Building Leaderboard ---\n")
 

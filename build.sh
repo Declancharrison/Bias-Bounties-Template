@@ -55,3 +55,5 @@ if [ ! "$(docker ps -a -q -f name=bias_bounty_container)" ]; then
       docker run -v "$(pwd)/container_tmp":/home/container_tmp --network none  --name bias_bounty_container -it bias_bounty:1.0
 fi
 
+rm Dockerfile
+rm bad_argvals.txt

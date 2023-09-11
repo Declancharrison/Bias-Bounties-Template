@@ -1,188 +1,86 @@
-# A True Bias Bounty
+# BIAS-BOUNTY-TEMPLATE
 
-## **Introduction**
+## Instructions
 
-In this repository (and [webpage](https://declancharrison.github.io/CIS_5230_Bias_Bounty_2023/)), you will find all the tools necessary to participate in the first ever ML Bias Bounty. This repository acts as a sort of "middle man" infrastructure to connect you (competitors) to a host server containing a global PDL model. You are able to submit group-hypothesis (g,h) pairs via pull requests, and the pair is integrated into the global model per the PointerDecisionList (PDL) protocol. The remainder of the readme is dedicated to the full workflow from training your pair of functions to submitting the update request and viewing the results of the PDL Protocol. You can download the .ipynb notebook named *starter_notebook.ipynb* to follow along the procedures below.
+### 1. Create Repository from Template
+Click on the green button which says *Use this template* and select *Create a new repository* from the drop down menu. Click on choose owner and select your GitHub username, and then add your desired name for the repository. Select **private** for the scope of the repository.
 
-## **Downloading/Importing the data**
+![alt text](setup-images/homepage.png)
 
-Navigate to the project webpage [here](https://declancharrison.github.io/CIS_5230_Bias_Bounty_2023/)
-and click the button "Download Training Data". Extract the downloaded .zip file and place the two files titled *training_data.csv* and *training_labels.csv* in the folder you will be working in. To load the data into your python environment, you can run the following:
-```python
-import pandas as pd
-import numpy as np
-x_train = pd.read_csv('training_data.csv') 
-y_train = np.genfromtxt('training_labels.csv', delimiter = ',', dtype = float)
+![alt text](setup-images/repository-creation.png)
+
+### 2. Set Permissions in your Repository
+Navigate to the repository you've just created and click on settings. In the general tab, check the boxes under *Pull Request* next to *Automatically suggest updating pull request branches* and *Automatically delete head branches*. 
+![alt text](setup-images/permissions-1.png)
+
+Then, on the left hand side under *Code and automation*, select *Branches* and click on *Add branch profection rule*. 
+
+![alt text](setup-images/branch-protection-1.png)
+
+Within the branch rule, name the rule "main" and select the following:
+
+**Protect Matching Branches**
+- *Require a pull request before merging*
+    - *Require approvals*
+    - *Dismiss stale pull request approvals when new commits are pushed*
+- *Require status checks to pass before merging*
+    - *Require branches to be up to date before merging*
+- *Require signed commits*
+- *Lock branch*
+
+**Rules applied to everyone incluiding administrators**
+- *Allow force pushes*
+    - *Specify who can force push*
+- *Allow deletions*
+
+Save changes and confirm branch protection rule.
+
+![alt text](setup-images/branch-protection-2.png)
+
+### 3. Clone Repository
+In the command line, change directories to the location on your server computer where you want to host the repository. Using SSH, clone the repository with the following command: 
+```bash
+git clone git@github.com:<your-github-username>/<your-repository-name>.git
+```
+Note: SSH authentication is required for future commands in the server script. If you need help generating and adding an SSH key, [please refer to the instructions here](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent).
+
+### 4. Add Server Path in GitHub Actions Secrets
+Navigate back to your GitHub repository's settings and under the *Security* section on the left hand side, click on *Secrets and variables* and select *Actions* from the drop down menu. Add a repository secret with name "SERVER_PATH" and add the full path to the repository on your host server as the secret. You can find this by navigating to the repository on your server in a terminal and running the command *pwd*.
+
+![alt text](setup-images/repository-secret.png)
+
+### 5. Download GitHub Actions + Install in Folder
+In the same settings page, under *Code and automation* click on *Actions* and select *Runners* from the drop down menu. Click the green button for *New self-hosted runner* in the upper right corner. Select your runner image (Linux) and architecture. In a terminal, navigate to your repository and run the commands in the *Download* section of the page. After the download completes, run the commands in the *Configure* section. Note: there will be multiple times that the configuration prompts you for input; simply press "Enter" during these sections and do not change directory names as it will cause the later installation to break.
+
+![alt text](setup-images/runner-1.png)
+![alt text](setup-images/runner-2.png)
+![alt text](setup-images/runner-3.png)
+
+### 6. Add Data + Teams .csv files to Folder
+From your server, add your data as a .csv in the repository. The file must contain the target labels under a column "Label" and be loadable through pandas. Next, add a .csv to the repository directory where each row corresponds to a participant and contains their GitHub username and team name. The column names for this .csv should be "Username" and "Team". Examples for both .csv have been added to the repository for your reference under *example_data.csv* and *example_teams.csv*. The data and teams file names will be added to the .gitignore to not be tracked, but it is highly recommended that you remove the files from the directory after installation. The same is true for an initial model which can be added to the folder as a .pkl file. If you choose to not insert an initial model, a base decision tree will be trained for you based on your task.
+
+### 7. Run build.sh
+In your repository, run the following commands in a terminal:
+```bash
+# add execute permisssion to build
+chmod +x build.sh
+
+# install bias bounties
+./build.sh
+```
+You will be prompted throughout the installation for information to include your data .csv name, prediction task, loss function, teams .csv name, initial model file name, and update alpha criteria. 
+
+### 8. Start GitHub Actions
+Final step, start your server with the following command:
+
+```bash
+./runner.sh
 ```
 
-## **Training a (g,h) pair**
+### 9. (Optional) Add the Default Website
+Under your repository's settings on GitHub, select *Pages* under *Code and automation*. On the branch section, select *main* from the dropdown menu and click *Save*. You are able to configure a custom domain if you wish, otherwise your website will be published under www.<github-username>.github.io/<your-repository-name>.
 
-A (g,h) pair is comprised of two functions: a group indicator function and a predictive model function. 
+![alt text](setup-images/webpage-1.png)
+![alt text](setup-images/webpage-2.png)
 
-For the group indicator function g, it is expected that g takes a data matrix X and returns an array of 0s and 1s with length equal to the len of the array X, i.e. if there are 100 instances in X, then g(X) should return a Numpy array of shape (100, ). Below is an example for Folktables for an indicator function returning individuals identified as white:
-```python
-def g_white(X):
-    return X['RAC1P'] == 1
-```
-
-*Note*: if you use the word *for* in your group function and it is not a super complicated group, you are likely doing something wrong. NumPy is wonderful at doing work in parallel and since you are updating to a global model, we want things to be as fast as possible. Here is another example of a more complicated group function which accepts individuals indentified as black or white and above the age of 50:
-
-```python
-def g_white_or_black_and_old(X):
-    return ( (X['RAC1P'] == 1 | X['RAC1P'] == 2 ) & (X['AGEP'] >= 50) )
-```
-
-For the hypothesis function h, the specifications are similar to the group function. It is expected that h takes a data matrix X and returns an array of float values with length equal to the len of the array X, i.e. if there are 100 instances in X, then h(X) should return a Numpy array of shape (100, ). Generally, h will be an ML model from scikit-learn which does not accept inputs without using the .predict(X) method. Thus, when you define your hypothesis function, you will define h to be clf.predict, which will allow you to use syntax h(X). Below is an example of a training a classifier using scikit-learn and then defining the hypothesis function:
-
-```python
-import sklearn as sk
-
-# initialize ML hypothesis class
-clf = sk.tree.DecisionTreeRegressor(max_depth = 5, random_state = 42)
-
-# fit model to data
-clf.fit(X, y)
-
-# define hypothesis function as bound clf.predict
-h = clf.predict
-```
-
-*Note*: if you simply define h to be clf, your hypothesis function will not save properly nor will it follow correct syntax! If you attempt an update with a hypothesis function of the wrong sort it will immediately be denied!
-
-It is worth mentioning there is no reason that you wouldn't be able to train a group function to be an arbitrarily complex ML model. You can use a binary classification model as a group function as show below:
-
-```python
-import sklearn as sk
-
-# initialize ML hypothesis class
-clf = sk.tree.DecisionTreeClassifier(max_depth = 5, random_state = 42)
-
-# fit model to data
-clf.fit(X, y)
-
-# define group function as bound clf.predict
-g = clf.predict
-```
-
-## **Training a hypothesis function over a group**
-
-After defining a region (group) in which you believe the model performs suboptimally, say individuals identified as white, you may wish to create a hypothesis function trained over solely the data in this group. You can do so by doing the following:
-
-```python
-import sklearn as sk
-
-# define group function
-def g(X):
-    return X['RAC1P'] == 1
-
-# initialize ML hypothesis class
-clf = sk.tree.DecisionTreeRegressor(max_depth = 5, random_state = 42)
-
-# find group indices on data
-indices = g(X)
-
-# fit model specifically to group
-clf.fit(X[indices], y[indices])
-
-# define hypothesis function as bound clf.predict
-h = clf.predict
-```
-
-While training a hypothesis function speficically on group data may be useful, you should remember you are restricting the amount of data you are allowing your model to be trained on. Thus, your model will inherently be more prone to overfitting. Another method you might consider is instead of restricting the data you are training on, maybe you upsample the items in the group to be a greater weight in the dataset, effectively making them more important in your classifier. This is a largely understudied area in terms of this project, so please record and document your methods in this direction!
-
-## **Saving functions for submission**
-
-A common way to save scikit-learn models is to *pickle* them, or to byte serialize them. While *pickle* is a wonderful package, we need something a little more powerful, and will be using a package called *dill*, which extends on the base *pickle*. 
-
-The generic method to saving an item is:
-
-```python
-import dill as pkl
-
-with open('filename.pkl', 'wb') as file:
-    pkl.dump(item, file)
-```
-
-The generic method to loading an item is:
-
-```python
-import dill as pkl
-
-with open('filename.pkl', 'rb') as file:
-    item = pkl.load(file)
-```
-
-From our running example, this is how you would train a (g,h) pair and save them to the files 'g.pkl' and 'h.pkl':
-
-
-```python
-import dill as pkl
-import sklearn as sk
-
-# define group function
-def g(X):
-    return X['RAC1P'] == 1
-
-# initialize ML hypothesis class
-clf = sk.tree.DecisionTreeRegressor(max_depth = 5, random_state = 42)
-
-# find group indices on data
-indices = g(X)
-
-# fit model specifically to group
-clf.fit(X[indices], y[indices])
-
-# define hypothesis function as bound clf.predict
-h = clf.predict
-
-# save group function to g.pkl
-with open('g.pkl', 'wb') as file:
-    pkl.dump(g, file)
-
-# save hypothesis function to h.pkl
-with open('h.pkl', 'wb') as file:
-    pkl.dump(h, file)
-
-```
-
-## **Uploading your pair**
-
-We will be using Google Drive for simplicity to upload your group and hypothesis functions to a public place for the server to download. Navigate to Google Drive and drag and drop the two files corresponding to your group and hypothesis functions into Google Drive. From the example above, the group function file is called 'g.pkl' and the hypothesis function file is called 'h.pkl'
-
-![width = 10](./images/drag-n-drop.png)
-
-## **Requesting an update**
-
-Once you have uploaded your functions to Google Drive, you are ready to submit an update request. You first need to get the URLs to your group and hypothesis function files. To get the URLs, you will right click on each respective file in Google Drive and click "get link". From there, you must ensure the file is available to all with link, and then will click "copy link". 
-
-![](./images/get-link.png)
-![](./images/google-link.png)
-
-Next,navigate to the Github Repository and select the folder title 'competitors'. From there, you will click on 'request.yaml' and see a .yaml file with two variables: *g_url* and *h_url*. 
-
-![](./images/github_repo.png)
-![](./images/request-yaml.png)
-
-Next, click on the small pencil in the upper right corner to edit the 'request.yaml' file:
-
-![](./images/click-pencil.png)
-
-
-Within the quotes next to *g_url*, you will place the link to your 'g.pkl' file from Google Drive. Similarly, within the quotes next to *h_url* you will place the link to your 'h.pkl' file from Google Drive. 
-
-![](./images/insert-links.png)
-
-Scroll to the bottom of the page and create a new branch with your changed file. Note, you will not have access to commit to the main branch since it is protected:
-
-![](./images/new-branch.png)
-
-This will open a second prompt where you will click the button for "Create pull request":
-
-![](./images/pull-req.png)
-
-Viola! Your pair has been submitted and the PDL Protocol will run on the server.
-
-## **Viewing the results of the PDL Protocol**
-
-After a potential update terminates in the PDL Protocol, there will be a comment made on the pull request. The pull request will be deleted within about 30 seconds of being created, though the comments will persist and be sent to the GitHub user's email address (if  default settings are applied).
-
+## Happy Hunting!
