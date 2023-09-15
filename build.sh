@@ -21,7 +21,11 @@ python3 -m venv bias_bounty_venv
 
 sudo chmod -R +rwx bias_bounty_venv/
 
+echo "hello"
+
 sudo $(pwd)/bias_bounty_venv/bin/pip install -r requirements.txt
+
+echo "world"
 
 python3 setup.py
 
