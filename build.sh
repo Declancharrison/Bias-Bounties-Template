@@ -66,9 +66,7 @@ if [ "$(docker ps -a -q -f name=bias_bounty_security_container)" ]; then
       docker rm bias_bounty_security_container
 fi
 echo "Creating Container"
-docker run -v $(pwd)/container_tmp:/home/non-root/container_tmp --network none  --name bias_bounty_security_container -it bias_bounty:1.0
-
-exit
+docker run -v $(pwd)/container_tmp:/home/non-root/container_tmp --network none  --name bias_bounty_security_container bias_bounty:1.0
 
 SECRET_USER=$(python3 -c "import setup; print(setup.create_env())")
 docker build --build-arg SECRET_USER="$SECRET_USER" -f Dockerfile.repo -t bias_bounty_repo:1.0 .
@@ -77,9 +75,7 @@ if [ "$(docker ps -a -q -f name=bias_bounty_repo_container)" ]; then
       echo "Removing Container"
       docker rm bias_bounty_repo_container
 fi
-docker run -v $(pwd):/home/$SECRET_USER/repo --name bias_bounty_repo_container -it bias_bounty_repo:1.0
-
-exit
+docker run -v $(pwd):/home/$SECRET_USER/repo --name bias_bounty_repo_container bias_bounty_repo:1.0
 
 echo "Installation Complete!"
 # rm Dockerfile
