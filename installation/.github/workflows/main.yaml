@@ -1,0 +1,50 @@
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  script:
+    name: request
+    runs-on: [self-hosted]
+    
+    steps:
+
+      # Checkout the latest code from the repo
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v6
+        
+      # Run the tests. I'm using pytest and the file is in the tests directory.
+      - name: Run tests
+        run: python3 ${{ secrets.SERVER_PATH }}/scripts/overall.py "request.yaml" "${{ github.event.pull_request.user.login }}"
+  
+  comments:
+    if: ${{ always() }}
+    needs: [script]
+    runs-on: [self-hosted]
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v6
+
+      - name: PR comment with file
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          filePath: ${{ secrets.SERVER_PATH }}/tmp/${{ github.event.pull_request.user.login }}_comment.txt
+
+  # delete_branch:
+  #   if: ${{ always() }}
+  #   needs: [script, comments]
+  #   runs-on: [self-hosted]
+  #   steps:
+
+       # Run the tests. I'm using pytest and the file is in the tests directory.
+      - name: Run clean up
+        run: python3 ${{ secrets.SERVER_PATH }}/scripts/clean_up.py "${{ steps.branch-name.outputs.current_branch }}"
+  

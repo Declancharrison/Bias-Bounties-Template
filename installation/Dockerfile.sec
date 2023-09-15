@@ -1,0 +1,23 @@
+FROM ubuntu:22.04
+
+RUN useradd -u 9999 non-root
+
+RUN mkdir -p home/non-root
+RUN mkdir -p home/non-root/container_tmp
+
+RUN apt update
+RUN apt install -y python3
+RUN apt install -y pip
+RUN apt install -y nano
+RUN apt install --reinstall -y systemd
+RUN apt install --reinstall -y rsyslog
+
+COPY requirements.txt home/non-root/requirements.txt
+COPY data/training_data.npy home/non-root/training_data.npy
+COPY .hidden/security.py home/non-root/security.py
+COPY .hidden/bad_argvals.txt home/non-root/bad_argvals.txt
+
+RUN pip install -r home/non-root/requirements.txt
+
+RUN chmod +x home/non-root/security.py
+USER non-root
