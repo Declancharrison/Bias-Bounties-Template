@@ -21,11 +21,7 @@ python3 -m venv bias_bounty_venv
 
 sudo chmod -R +rwx bias_bounty_venv/
 
-echo "hello"
-
 sudo $(pwd)/bias_bounty_venv/bin/pip install -r requirements.txt
-
-echo "world"
 
 python3 setup.py
 
@@ -70,7 +66,7 @@ if [ "$(docker ps -a -q -f name=bias_bounty_security_container)" ]; then
       docker rm bias_bounty_security_container
 fi
 echo "Creating Container"
-docker run -v $(pwd)/container_tmp:/home/non-root/container_tmp --network none  --name bias_bounty_container -it bias_bounty:1.0
+docker run -v $(pwd)/container_tmp:/home/non-root/container_tmp --network none  --name bias_bounty_security_container -it bias_bounty:1.0
 
 SECRET_USER=$(python3 -c "import setup; print(setup.create_env())")
 docker build --build-arg SECRET_USER="$SECRET_USER" -f Dockerfile.repo -t bias_bounty_repo:1.0 .
