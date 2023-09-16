@@ -6,6 +6,7 @@ RUN apt update
 RUN apt install -y python3
 RUN apt install -y pip
 RUN apt install -y nano
+RUN apt install -y git 
 RUN apt install --reinstall -y systemd
 RUN apt install --reinstall -y rsyslog
 
@@ -21,13 +22,13 @@ RUN useradd --gid 2021 $SECRET_USER
 RUN mkdir -p home/$SECRET_USER
 RUN mkdir -p home/$SECRET_USER/repo
 
-# COPY data/training_data.npy home/non-root/training_data.npy
-# COPY .hidden/security.py home/non-root/security.py
-# COPY .hidden/bad_argvals.txt home/non-root/bad_argvals.txt
+RUN ssh-keygen -t ed25519
+RUN yes ""
+RUN yes ""
+RUN yes ""
 
-
-
-
-# os.system(f"chmod -R 777 /home/{SECRET}")
+RUN eval "$(ssh-agent -s)"
+RUN ssh-add ~/.ssh/id_ed25519
+RUN cp ssh_key.txt ~/.ssh/id_ed25519.pub
 
 USER $SECRET_USER

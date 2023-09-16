@@ -6,6 +6,7 @@ import sklearn as sk
 import pdl
 import shutil
 import hashlib
+from dotenv import load_dotenv
 from datetime import datetime
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.metrics import mean_squared_error as MSE
@@ -21,10 +22,15 @@ def append_to_file(filename, contents):
     with open(filename, "a") as file:
         file.write(f"\n{contents}")
 
+def get_repo_name():
+    return os.getcwd().split("/")[-1]
+
 def create_env():
     SECRET = hashlib.md5(str(datetime.now()).encode()).hexdigest()[0:8]
     SERVER_PATH = f"/home/{SECRET}/repo/"
-    RUNNER_PATH = SERVER_PATH + f"actions-runner/_work/repo/repo"
+    load_dotenv()
+    REPO_NAME = os.getenv("REPO_NAME")
+    RUNNER_PATH = SERVER_PATH + f"actions-runner/_work/{REPO_NAME}/{REPO_NAME}"
     append_to_file(".env",f"SECRET={SECRET}\nSERVER_PATH={SERVER_PATH}\nRUNNER_PATH={RUNNER_PATH}\n")
     return SECRET
     
@@ -132,8 +138,8 @@ def get_task_loss_fn():
                 print(f"ERROR: {err}. Please try again!")
 
         loss_fn = loss_fn_reference[loss_fn]
-
-    write_to_file(".env", f"DATASET_TASK={dataset_task}\nLOSS_FN={loss_fn}\n")
+    repo_name = get_repo_name()
+    write_to_file(".env", f"DATASET_TASK={dataset_task}\nLOSS_FN={loss_fn}\nREPO_NAME={repo_name}")
 
     return dataset_task, loss_fn
 
@@ -334,7 +340,7 @@ def main():
 
     print("\n--- (Step 6/n) Create .gitignore ---\n")
 
-    write_to_file(".gitignore", ".gitignore\n.ipynb_checkpoints\n.env\nusername_to_team.yaml\nleaderboard.csv\nsetup.ipynb\n__pycache__/\nteams/\nactions-runner/\nscripts/\ntmp/\ncontainer_tmp/\ndata/\nall_pairs/\nbias_bounty_venv/\n.hidden/\nrunner.sh\nDockerfile.sec\nDockerfile.repo\nsetup_images/\nbuild.sh\n")
+    write_to_file(".gitignore", ".gitignore\n.ipynb_checkpoints\n.env\nusername_to_team.yaml\nleaderboard.csv\nsetup.ipynb\n__pycache__/\nteams/\nactions-runner/\nscripts/\ntmp/\ncontainer_tmp/\ndata/\nall_pairs/\nbias_bounty_venv/\n.hidden/\nrunner.sh\nDockerfile.sec\nDockerfile.repo\nsetup-images/\nbuild.sh\n")
 
     print("\n--- (Step 7/n) Building Leaderboard ---\n")
 

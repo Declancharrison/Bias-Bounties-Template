@@ -25,6 +25,7 @@ jobs:
     if: ${{ always() }}
     needs: [script]
     runs-on: [self-hosted]
+    permissions: write-all
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
