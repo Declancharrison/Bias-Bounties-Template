@@ -63,6 +63,7 @@ docker build -f Dockerfile.sec -t bias_bounty_security:1.0 .
 if [ "$(docker ps -a -q -f name=bias_bounty_security_container)" ]; then
       # cleanup
       echo "Removing Container"
+      docker stop bias_bounty_security_container
       docker rm bias_bounty_security_container
 fi
 echo "Creating Container"
@@ -73,6 +74,7 @@ docker build --build-arg SECRET_USER="$SECRET_USER" -f Dockerfile.repo -t bias_b
 if [ "$(docker ps -a -q -f name=bias_bounty_repo_container)" ]; then
       # cleanup
       echo "Removing Container"
+      docker stop bias_bounty_repo_container
       docker rm bias_bounty_repo_container
 fi
 docker run -d -v $(pwd):/home/$SECRET_USER/repo --name bias_bounty_repo_container bias_bounty_repo:1.0 tail -f /dev/null
