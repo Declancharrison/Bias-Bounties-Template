@@ -23,7 +23,7 @@ def append_to_file(filename, contents):
 
 def create_env():
     SECRET = hashlib.md5(str(datetime.now()).encode()).hexdigest()[0:8]
-    SERVER_PATH = "/home/{SECRET}/repo/"
+    SERVER_PATH = f"/home/{SECRET}/repo/"
     RUNNER_PATH = SERVER_PATH + f"actions-runner/_work/repo/repo"
     append_to_file(".env",f"SECRET={SECRET}\nSERVER_PATH={SERVER_PATH}\nRUNNER_PATH={RUNNER_PATH}\n")
     return SECRET
@@ -334,7 +334,7 @@ def main():
 
     print("\n--- (Step 6/n) Create .gitignore ---\n")
 
-    write_to_file(".gitignore", ".gitignore\n.ipynb_checkpoints\n.env\nusername_to_team.yaml\nleaderboard.csv\nsetup.ipynb\n__pycache__/\nteams/\nactions-runner/\nscripts/\ntmp/\ncontainer_tmp/\ndata/\nall_pairs/\nbias_bounty_venv/\n.hidden/\nrunner.sh")
+    write_to_file(".gitignore", ".gitignore\n.ipynb_checkpoints\n.env\nusername_to_team.yaml\nleaderboard.csv\nsetup.ipynb\n__pycache__/\nteams/\nactions-runner/\nscripts/\ntmp/\ncontainer_tmp/\ndata/\nall_pairs/\nbias_bounty_venv/\n.hidden/\nrunner.sh\nDockerfile.sec\nDockerfile.repo\nsetup_images/\nbuild.sh\n")
 
     print("\n--- (Step 7/n) Building Leaderboard ---\n")
 

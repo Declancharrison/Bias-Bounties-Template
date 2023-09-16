@@ -79,6 +79,15 @@ if [ "$(docker ps -a -q -f name=bias_bounty_repo_container)" ]; then
 fi
 docker run -d -v $(pwd):/home/$SECRET_USER/repo --name bias_bounty_repo_container bias_bounty_repo:1.0 tail -f /dev/null
 
+rm setup.py
+rm README.md
+mv SubmissionInstructions.md README.md
+
+git rm -r --cached .
+git add .
+git commit -m "Installation Complete!"
+git push
+
 echo "Installation Complete!"
 # rm Dockerfile
 # rm bad_argvals.txt
