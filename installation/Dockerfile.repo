@@ -1,12 +1,15 @@
 FROM ubuntu:22.04
 
 ARG SECRET_USER
+ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt update
 RUN apt install -y python3
 RUN apt install -y pip
 RUN apt install -y nano
 RUN apt install -y git 
+RUN apt install -y expect
+RUN apt install -y openssh-client
 RUN apt install --reinstall -y systemd
 RUN apt install --reinstall -y rsyslog
 
@@ -15,20 +18,25 @@ COPY requirements.txt requirements.txt
 COPY pdl.py pdl.py
 RUN pip install -r requirements.txt
 
-RUN echo $SECRET_USER
 RUN addgroup --gid 2021 non-root
 RUN useradd --gid 2021 $SECRET_USER
 
-RUN mkdir -p home/$SECRET_USER
-RUN mkdir -p home/$SECRET_USER/repo
+RUN mkdir -p /home/$SECRET_USER
+RUN mkdir -p /home/$SECRET_USER/repo
 
-RUN ssh-keygen -t ed25519
-RUN yes ""
-RUN yes ""
-RUN yes ""
+COPY ssh_key.sh /home/$SECRET_USER/ssh_key.sh
+RUN ./home/$SECRET_USER/ssh_key.sh
+RUN rm /home/$SECRET_USER/ssh_key.sh
+RUN mv ~/.ssh /home/$SECRET_USER/.ssh
+RUN chown -R $SECRET_USER:non-root /home/$SECRET_USER/.ssh
 
-RUN eval "$(ssh-agent -s)"
-RUN ssh-add ~/.ssh/id_ed25519
-RUN cp ssh_key.txt ~/.ssh/id_ed25519.pub
+RUN eval "$(ssh-agent -s)" && \
+    ssh-add /home/$SECRET_USER/.ssh/id_ed25519
+
+RUN git config --global user.email "0xDEADBEEF@haxzor.com"
+RUN git config --global user.name "0xCAFEBABE"
+
+RUN ssh-keyscan -t rsa github.com >> home/$SECRET_USER/.ssh/known_hosts
+RUN cat /home/$SECRET_USER/.ssh/id_ed25519.pub
 
 USER $SECRET_USER

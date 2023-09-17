@@ -78,7 +78,10 @@ if [ "$(docker ps -a -q -f name=bias_bounty_repo_container)" ]; then
       docker rm bias_bounty_repo_container
 fi
 docker run -d -v $(pwd):/home/$SECRET_USER/repo --name bias_bounty_repo_container bias_bounty_repo:1.0 tail -f /dev/null
-
+echo "____________________________________________________________________________"
+echo "Copy/Paste the public key below into ssh keys in your github account:"
+docker exec bias_bounty_repo_container cat "/home/$SECRET_USER/.ssh/id_ed25519.pub"
+echo "____________________________________________________________________________"
 rm setup.py
 rm README.md
 mv SubmissionInstructions.md README.md
