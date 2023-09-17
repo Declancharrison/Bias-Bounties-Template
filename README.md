@@ -38,11 +38,11 @@ Save changes and confirm branch protection rule.
 ![alt text](installation/setup-images/branch-protection-2.png)
 
 ### 3. Clone Repository
-In the command line, change directories to the location on your server computer where you want to host the repository. Using SSH, clone the repository with the following command: 
+In the command line, change directories to the location on your server computer where you want to host the repository. IF you have an SSH set up, you can clone the repository with the following command: 
 ```bash
 git clone git@github.com:<your-github-username>/<your-repository-name>.git
 ```
-Note: SSH authentication is required for future commands in the server script. If you need help generating and adding an SSH key, [please refer to the instructions here](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent).
+Note: SSH authentication is required for future commands in the server script. We will generate an isolated SSH key specific to the docker container hosting your repository. We do not use existing SSH keys for security purposes. If you need help generating and adding a personal SSH key, [please refer to the instructions here](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent).
 
 ### 4. Add Server Path in GitHub Actions Secrets
 Navigate back to your GitHub repository's settings and under the *Security* section on the left hand side, click on *Secrets and variables* and select *Actions* from the drop down menu. Add a repository secret with name "SERVER_PATH" and add the full path to the repository on your host server as the secret. You can find this by navigating to the repository on your server in a terminal and running the command *pwd*.
@@ -50,7 +50,7 @@ Navigate back to your GitHub repository's settings and under the *Security* sect
 ![alt text](installation/setup-images/repository-secret.png)
 
 ### 5. Download GitHub Actions + Install in Folder
-In the same settings page, under *Code and automation* click on *Actions* and select *Runners* from the drop down menu. Click the green button for *New self-hosted runner* in the upper right corner. Select your runner image (Linux) and architecture. In a terminal, navigate to your repository and run the commands in the *Download* section of the page. After the download completes, run the commands in the *Configure* section. Note: there will be multiple times that the configuration prompts you for input; simply press "Enter" during these sections and do not change directory names as it will cause the later installation to break.
+In the same settings page, under *Code and automation* click on *Actions* and select *Runners* from the drop down menu. Click the green button for *New self-hosted runner* in the upper right corner. Select your runner image (Linux) and architecture. In a terminal, navigate to your repository and run the commands in the *Download* section of the page. After the download completes, run the commands in the *Configure* section. Note: there will be multiple times that the configuration prompts you for input; simply press "Enter" during these sections and do not change directory names as it will cause the installation to break later.
 
 ![alt text](installation/setup-images/runner-1.png)
 ![alt text](installation/setup-images/runner-2.png)
@@ -70,7 +70,18 @@ chmod +x build.sh
 ```
 You will be prompted throughout the installation for information to include your data .csv name, prediction task, loss function, teams .csv name, initial model file name, and update alpha criteria. 
 
-### 8. Start GitHub Actions
+
+### 8. Adding Container SSH Key to GitHub
+
+When the installation successfully completes, the public portion of an SSH key will be echoed to the terminal screen. It should look something like the following:
+```bash
+ssh-ed25519 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+empty@mail.com
+```
+
+Copy and paste this authentication key into your SSH keys under GitHub profile settings [following this instructions guide](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account).
+
+### 9. Start GitHub Actions
 Final step, start your server with the following command:
 
 ```bash

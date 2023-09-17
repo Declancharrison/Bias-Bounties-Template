@@ -57,6 +57,20 @@ sudo chmod 755 $(pwd)
 sudo chmod g+s $(pwd)
 adduser $(whoami) 2021
 
+echo "Building docker gapped network"
+if [docker network ls | grep "no-internet"]; then
+      echo "Removing old container network"
+      docker network rm no-internet
+fi
+docker network create no-internet --internal
+
+echo "Building docker normal network"
+if [docker network ls | grep "bias_bounty_network"]; then
+      echo "Removing old container network"
+      docker network rm bias_bounty_network
+fi
+docker network create biasbountynet
+
 echo "Building Docker Security Container"
 
 docker build -f Dockerfile.sec -t bias_bounty_security:1.0 .
@@ -67,7 +81,7 @@ if [ "$(docker ps -a -q -f name=bias_bounty_security_container)" ]; then
       docker rm bias_bounty_security_container
 fi
 echo "Creating Container"
-docker run -d -v $(pwd)/container_tmp:/home/non-root/container_tmp --network none --name bias_bounty_security_container bias_bounty:1.0 tail -f /dev/null
+docker run -d -v $(pwd)/container_tmp:/home/non-root/container_tmp --network no-internet --name bias_bounty_security_container bias_bounty_security:1.0 tail -f /dev/null
 
 SECRET_USER=$(python3 -c "import setup; print(setup.create_env())")
 docker build --build-arg SECRET_USER="$SECRET_USER" -f Dockerfile.repo -t bias_bounty_repo:1.0 .
@@ -77,7 +91,8 @@ if [ "$(docker ps -a -q -f name=bias_bounty_repo_container)" ]; then
       docker stop bias_bounty_repo_container
       docker rm bias_bounty_repo_container
 fi
-docker run -d -v $(pwd):/home/$SECRET_USER/repo --name bias_bounty_repo_container bias_bounty_repo:1.0 tail -f /dev/null
+docker run -d -v $(pwd):/home/$SECRET_USER/repo --name bias_bounty_repo_container --network biasbountynet bias_bounty_repo:1.0 tail -f /dev/null
+docker network connect no-internet bias_bounty_repo_container
 echo "____________________________________________________________________________"
 echo "Copy/Paste the public key below into ssh keys in your github account:"
 docker exec bias_bounty_repo_container cat "/home/$SECRET_USER/.ssh/id_ed25519.pub"
