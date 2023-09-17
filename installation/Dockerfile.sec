@@ -11,10 +11,14 @@ COPY requirements.txt home/non-root/requirements.txt
 COPY data/training_data.npy home/non-root/training_data.npy
 COPY .hidden/security.py home/non-root/security.py
 COPY .hidden/bad_argvals.txt home/non-root/bad_argvals.txt
+COPY .hidden/server.py home/non-root/server.py
 
 RUN pip install -r home/non-root/requirements.txt
 
 RUN chmod +x home/non-root/security.py
+RUN chmod +x home/non-root/server.py
 
 USER non-root
+
+CMD ["python3", "home/non-root/server.py" ]
 

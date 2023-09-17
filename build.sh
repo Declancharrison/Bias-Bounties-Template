@@ -1,11 +1,10 @@
 #!/bin/bash
 
-echo "\n\
-      +===============================================+ \n\
-      +                                               + \n\
-      +      Welcome to the installation wizard!      + \n\
-      +                                               + \n\
-      +===============================================+\n"
+echo "+===============================================+"
+echo "+                                               +" 
+echo "+      Welcome to the installation wizard!      +" 
+echo "+                                               +" 
+echo "+===============================================+"
 
 echo "Building python virtual environment"
 pyc="$(python3 -V)"
@@ -93,10 +92,14 @@ if [ "$(docker ps -a -q -f name=bias_bounty_repo_container)" ]; then
 fi
 docker run -d -v $(pwd):/home/$SECRET_USER/repo --name bias_bounty_repo_container --network biasbountynet bias_bounty_repo:1.0 tail -f /dev/null
 docker network connect no-internet bias_bounty_repo_container
-echo "____________________________________________________________________________"
-echo "Copy/Paste the public key below into ssh keys in your github account:"
+echo "___________________________________________________________________________________________________________________"
+echo ""
+echo "Copy/Paste the public key below into ssh keys in your github account following these instructions:"
+echo "https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account"
+echo ""
 docker exec bias_bounty_repo_container cat "/home/$SECRET_USER/.ssh/id_ed25519.pub"
-echo "____________________________________________________________________________"
+echo ""
+echo "___________________________________________________________________________________________________________________"
 rm setup.py
 rm README.md
 mv SubmissionInstructions.md README.md

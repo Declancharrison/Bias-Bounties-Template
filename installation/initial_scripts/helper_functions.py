@@ -30,7 +30,7 @@ import datetime
 from dotenv import load_dotenv
 import docker
 import shutil
-
+import client
 #load
 # leaderboard = pd.read_csv("leaderboard.csv", index_col = "Unnamed: 0")
 
@@ -63,57 +63,57 @@ y_val   = np.load(f'{SERVER_PATH}/data/validation_labels.npy')
 
 x_val_statistics, _, y_val_statistics, _ = train_test_split(x_val, y_val, test_size = .5, random_state = 23)
 
-# safe_builtins = [
-#     'range',
-#     'complex',
-#     'set',
-#     'frozenset',
-#     'slice',
-#     '_load_type',
-#     'getattr',
-#     'setattr',
-#     '__dict__',
-#     '__main__'
-# ]
+safe_builtins = [
+    'range',
+    'complex',
+    'set',
+    'frozenset',
+    'slice',
+    '_load_type',
+    'getattr',
+    'setattr',
+    '__dict__',
+    '__main__'
+]
 
-# class RestrictedUnpickler(pkl.Unpickler):
+class RestrictedUnpickler(pkl.Unpickler):
 
-#     def find_class(self, module, name):
-#         if 'numpy' in module:
-#             return getattr(sys.modules[module], name)
-#         if 'scipy' in module:
-#             return getattr(sys.modules[module], name)
-#         if 'sklearn' in module or 'xgboost' in module or 'lightgbm' in module or 'collections' in module:
-#             if 'predict' in name:
-#                 return getattr(sys.modules[module], name.split('.')[0]).predict
-#             if 'transform' in name:
-#                 return getattr(sys.modules[module], name.split('.')[0]).transform
-#             return getattr(sys.modules[module], name)
-#         # Only allow safe classes from builtins.
-#         if 'dill' in module:
-#             return getattr(sys.modules[module], name)
-#         if ("__builtin__" in module or "builtins" in module) and name in safe_builtins:
-#             if name == '__main__':
-#                 return
-#             return getattr(builtins, name)
-#         # Forbid everything else.
-#         raise pkl.UnpicklingError("global '%s.%s' is forbidden" %
-#                                      (module, name))
+    def find_class(self, module, name):
+        if 'numpy' in module:
+            return getattr(sys.modules[module], name)
+        if 'scipy' in module:
+            return getattr(sys.modules[module], name)
+        if 'sklearn' in module or 'xgboost' in module or 'lightgbm' in module or 'collections' in module:
+            if 'predict' in name:
+                return getattr(sys.modules[module], name.split('.')[0]).predict
+            if 'transform' in name:
+                return getattr(sys.modules[module], name.split('.')[0]).transform
+            return getattr(sys.modules[module], name)
+        # Only allow safe classes from builtins.
+        if 'dill' in module:
+            return getattr(sys.modules[module], name)
+        if ("__builtin__" in module or "builtins" in module) and name in safe_builtins:
+            if name == '__main__':
+                return
+            return getattr(builtins, name)
+        # Forbid everything else.
+        raise pkl.UnpicklingError("global '%s.%s' is forbidden" %
+                                     (module, name))
 
-# def restricted_loads(s):
-#     """Helper function analogous to pickle.loads()."""
-#     return RestrictedUnpickler(io.BytesIO(s)).load()
+def restricted_loads(s):
+    """Helper function analogous to pickle.loads()."""
+    return RestrictedUnpickler(io.BytesIO(s)).load()
 
-# class AttrDict(dict):
-#     def __init__(self, *args, **kwargs):
-#         super(AttrDict, self).__init__(*args, **kwargs)
-#         self.__dict__ = self
+class AttrDict(dict):
+    def __init__(self, *args, **kwargs):
+        super(AttrDict, self).__init__(*args, **kwargs)
+        self.__dict__ = self
 
-# def load_item(filepath):
-#     with open(filepath, "rb") as file:
-#         item_data = file.read()
-#         item = restricted_loads(item_data)
-#     return item
+def load_item(filepath):
+    with open(filepath, "rb") as file:
+        item_data = file.read()
+        item = restricted_loads(item_data)
+    return item
 
 def get_slack_key():
     try:
@@ -174,25 +174,10 @@ def load_pdl(user_path):
     return team_pdl
 
 def security_call():
-    client = docker.from_env()
     try:
-        os.system("docker start bias_bounty_container")
+        output = client.send_req()
     except:
-        print(f"Error: {err}. Problem starting docker container!")
-        return False
-    try:
-        container = client.containers.get("bias_bounty_container")
-
-        exec_response = container.exec_run("python3 /home/non-root/security.py")
-        print(exec_response)
-        output = exec_response.output
-        print(output)
-
-    except Exception as err:
-        print(f"Error: {err}. Problem running object in docker container!")
-        output = False
-
-    os.system("docker stop bias_bounty_container")
+        output = "Error in sending request"
     return output
 
 def initialize_comment():
@@ -345,21 +330,21 @@ def test_urls():
 
     if (os.path.isfile(f"{SERVER_PATH}/tmp/group.pkl") == True) and (os.path.isfile(f"{SERVER_PATH}/tmp/hypothesis.pkl") == True):
         assert True
-        shutil.move(f"{SERVER_PATH}/tmp/group.pkl", f"{SERVER_PATH}/container_tmp/group.pkl")
-        shutil.move(f"{SERVER_PATH}/tmp/hypothesis.pkl", f"{SERVER_PATH}/container_tmp/group.pkl")
+        shutil.copy(f"{SERVER_PATH}/tmp/group.pkl", f"{SERVER_PATH}/container_tmp/group.pkl")
+        shutil.copy(f"{SERVER_PATH}/tmp/hypothesis.pkl", f"{SERVER_PATH}/container_tmp/group.pkl")
 
         return True
     add_comment(f"Either group of model URLs are not downloaded, please ensure no authentication is used and links are copied over correctly!.\n")
     assert False
         
     
-def test_update(flag, group, hypothesis):
+def test_update(flag):
 
-    if not flag:
-        if group:
-            add_comment(group)
-        if hypothesis:
-            add_comment(hypothesis)
+    if flag != "safe":
+        add_comment(flag)
+
+    group = load_item(f"{SERVER_PATH}/tmp.group.pkl")
+    hypothesis = load_item(f"{SERVER_PATH}/tmp.hypothesis.pkl")
 
     team_name = get_team_name()
     

@@ -25,6 +25,7 @@ RUN mkdir -p /home/$SECRET_USER
 RUN mkdir -p /home/$SECRET_USER/repo
 
 COPY ssh_key.sh /home/$SECRET_USER/ssh_key.sh
+RUN chmod +x /home/$SECRET_USER/ssh_key.sh
 RUN ./home/$SECRET_USER/ssh_key.sh
 RUN rm /home/$SECRET_USER/ssh_key.sh
 RUN mv ~/.ssh /home/$SECRET_USER/.ssh

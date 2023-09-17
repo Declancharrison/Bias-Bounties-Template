@@ -300,7 +300,7 @@ def clean_up(data_path, teams_csv_path, base_model_path):
     if not os.path.exists(".hidden"):
         os.mkdir(".hidden")
         
-    for filename in ["bad_argvals.txt", "security.py"]:
+    for filename in ["bad_argvals.txt", "security.py", "server.py"]:
         if os.path.exists(filename):
             shutil.move(filename, f".hidden/{filename}")
 

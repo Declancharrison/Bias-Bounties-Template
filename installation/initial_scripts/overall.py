@@ -12,7 +12,7 @@ hf.test_len()
 hf.test_urls()
 
 # run security
-flag, (group, hypothesis) = hf.security_call()
+flag = hf.security_call()
 
 # test updates
-hf.test_update(flag, group, hypothesis)
+hf.test_update(flag)

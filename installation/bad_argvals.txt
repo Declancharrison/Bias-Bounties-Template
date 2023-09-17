@@ -18,3 +18,4 @@ w
 wb
 r
 rb
+curl
