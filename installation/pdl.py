@@ -235,7 +235,15 @@ class PointerDecisionList:
 
         self.repairs = 0
 
-        if ( ( (indices_val.sum()/len(indices_val)) *(model_error_val - hypothesis_error_val) ) > self.alpha):
+        flag = 0
+        if self.loss_fn_name not in ["ACC", "TOP_K"]:
+            if ( ( (indices_val.sum()/len(indices_val)) *(model_error_val - hypothesis_error_val) ) > self.alpha):
+                flag = 1
+        else:
+            if ( ( (indices_val.sum()/len(indices_val)) *(hypothesis_error_val - model_error_val) ) > self.alpha):
+                flag = 1
+
+        if flag:
             #metrics for paper, lightweight version would not require the following
             indices_train = group(x_train).astype('bool')
             hypothesis_preds_train = hypothesis(x_train[indices_train])
@@ -245,7 +253,7 @@ class PointerDecisionList:
 
             self.train_predictions[indices_train] = hypothesis_preds_train
             self.val_predictions[indices_val] = hypothesis_preds_val
-            self.best_group_errors_val = np.append(self.best_group_errors_val, self.loss_fn(self.y_val[indices_val], self.val_predictions[indices_val]))
+            self.best_group_errors_val = np.append(self.best_group_errors_val, self.loss_fn(y_val[indices_val], self.val_predictions[indices_val]))
             self.best_group_predictions_train[self.updates] = self.train_predictions[indices_train]
             self.best_group_predictions_val[self.updates] = self.val_predictions[indices_val]
             

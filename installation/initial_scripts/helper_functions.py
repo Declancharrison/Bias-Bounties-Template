@@ -56,9 +56,9 @@ sys.setrecursionlimit(2140000000)
 sys.path.insert(0, SERVER_PATH)
 import pdl
 
-x_train = np.load(f'{SERVER_PATH}/data/training_data.npy') 
+x_train = pd.read_csv(f'{SERVER_PATH}/data/training_data.csv', index_col=False) 
 y_train = np.load(f'{SERVER_PATH}/data/training_labels.npy')
-x_val   = np.load(f'{SERVER_PATH}/data/validation_data.npy') 
+x_val   = pd.read_csv(f'{SERVER_PATH}/data/validation_data.csv', index_col=False) 
 y_val   = np.load(f'{SERVER_PATH}/data/validation_labels.npy')
 
 x_val_statistics, _, y_val_statistics, _ = train_test_split(x_val, y_val, test_size = .5, random_state = 23)
@@ -157,6 +157,7 @@ def get_team_name():
 
     # get team name from github username
     try:
+        team_information = {key.lower() : value for key, value in team_information.items()}
         team_name = team_information[username]
     except:
         add_comment(f"Username could not be associated with a team name, please contact admin staff!.\n")
@@ -232,7 +233,7 @@ def team_model_update(team_pdl, group, hypothesis, user_path, team_name, global_
             update_leaderboard(team_name, team_model_error, 0, 1, global_delta)
 
     else:
-        team_pdl.save_model(f'{user_path}/PDL')
+        team_pdl.save_model(f'{user_path}')
         add_comment("Private Update Accepted!\n")
 
         team_model_error = np.sqrt(loss_fn(y_val, team_pdl.val_predictions))
@@ -240,14 +241,14 @@ def team_model_update(team_pdl, group, hypothesis, user_path, team_name, global_
         update_leaderboard(team_name, team_model_error, 1, int(global_flag), global_delta)
 
         team_train_predictions = team_pdl.train_predictions
-        np.save(f"{SERVER_PATH}/models/{team_name}/training_predictions.npy", team_train_predictions)
+        np.save(f"{SERVER_PATH}/models/{team_name}/train_predictions.npy", team_train_predictions)
        
     return flag
 
 def global_model_update(team_name, group, hypothesis):
     # load team's pdl infrastructure
     try:
-        global_pdl = load_pdl(f"{SERVER_PATH}/teams/global_pdl")
+        global_pdl = load_pdl(f"{SERVER_PATH}/teams/global_pdl/PDL")
     except:
         add_comment("Problem loading global pdl, contact administrator!\n")
         assert False
@@ -285,7 +286,7 @@ def global_model_update(team_name, group, hypothesis):
         global_pdl.save_model(f'{SERVER_PATH}/teams/global_pdl/PDL')
 
         global_train_predictions = global_pdl.train_predictions
-        np.save(f"{SERVER_PATH}/models/global_model/training_predictions.npy", global_train_predictions)
+        np.save(f"{SERVER_PATH}/models/global_model/train_predictions.npy", global_train_predictions)
         
         # send_global_slack_msg(team_name, delta)
         
@@ -320,18 +321,18 @@ def test_urls():
     try:
         if 'google' in g_url:
             output_file = f"{SERVER_PATH}/tmp/group.pkl"
-            gdown.download(url=g_url, output=output_file, quiet=False, fuzzy=True)
+            gdown.download(url=g_url, output=output_file, quiet=True, fuzzy=True)
 
         if 'google' in h_url:
             output_file = f"{SERVER_PATH}/tmp/hypothesis.pkl"
-            gdown.download(url=h_url, output=output_file, quiet=False, fuzzy=True)
+            gdown.download(url=h_url, output=output_file, quiet=True, fuzzy=True)
     except:
         pass
 
     if (os.path.isfile(f"{SERVER_PATH}/tmp/group.pkl") == True) and (os.path.isfile(f"{SERVER_PATH}/tmp/hypothesis.pkl") == True):
         assert True
         shutil.copy(f"{SERVER_PATH}/tmp/group.pkl", f"{SERVER_PATH}/container_tmp/group.pkl")
-        shutil.copy(f"{SERVER_PATH}/tmp/hypothesis.pkl", f"{SERVER_PATH}/container_tmp/group.pkl")
+        shutil.copy(f"{SERVER_PATH}/tmp/hypothesis.pkl", f"{SERVER_PATH}/container_tmp/hypothesis.pkl")
 
         return True
     add_comment(f"Either group of model URLs are not downloaded, please ensure no authentication is used and links are copied over correctly!.\n")
@@ -342,13 +343,14 @@ def test_update(flag):
 
     if flag != "safe":
         add_comment(flag)
+        assert False
 
-    group = load_item(f"{SERVER_PATH}/tmp.group.pkl")
-    hypothesis = load_item(f"{SERVER_PATH}/tmp.hypothesis.pkl")
+    group = load_item(f"{SERVER_PATH}tmp/group.pkl")
+    hypothesis = load_item(f"{SERVER_PATH}tmp/hypothesis.pkl")
 
     team_name = get_team_name()
     
-    user_path = f'{SERVER_PATH}/teams/{team_name}'
+    user_path = f'{SERVER_PATH}/teams/{team_name}/PDL'
 
     # load team's pdl infrastructure
     team_pdl = load_pdl(user_path)
@@ -415,7 +417,7 @@ def update_global_statistics(X, y, preds):
 
 def update_leaderboard(team_name, model_error, flag, global_flag, global_change):
 
-    leaderboard_df = pd.read_csv("leaderboard.csv", index_col = "Unnamed: 0")
+    leaderboard_df = pd.read_csv(f"{SERVER_PATH}/leaderboard.csv", index_col = "Unnamed: 0")
     
     if "Error" in leaderboard_df.columns:
         type_error = "Error"
@@ -436,7 +438,7 @@ def update_leaderboard(team_name, model_error, flag, global_flag, global_change)
 
     leaderboard_df.index += 1
 
-    leaderboard_df.to_csv("leaderboard.csv")
+    leaderboard_df.to_csv(f"{SERVER_PATH}/leaderboard.csv")
 
     with open(f'{SERVER_PATH}/leaderboard.md', 'w') as file:
         file.write("---\n layout: leaderboard \n title: Leaderboard\n description: Leaderboard by RMSE of teams participating. \n---\n")

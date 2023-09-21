@@ -8,7 +8,7 @@ RUN mkdir -p home/non-root/container_tmp
 RUN apt update && apt install -y python3 pip nano
 
 COPY requirements.txt home/non-root/requirements.txt
-COPY data/training_data.npy home/non-root/training_data.npy
+COPY data/training_data.csv home/non-root/training_data.csv
 COPY .hidden/security.py home/non-root/security.py
 COPY .hidden/bad_argvals.txt home/non-root/bad_argvals.txt
 COPY .hidden/server.py home/non-root/server.py

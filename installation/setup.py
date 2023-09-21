@@ -38,7 +38,7 @@ def load_data():
     while True:
         filename = input("Input filename for data (requires .csv format)\n\n>>> ")
         try:
-            data = pd.read_csv(filename)
+            data = pd.read_csv(filename, index_col=False)
         except Exception as err:
             print(f"ERROR: {err}. Please retry!")
             continue
@@ -59,13 +59,18 @@ def split_save_data(data, labels):
     
     shutil.rmtree("data", ignore_errors=True)
     os.mkdir("data")
+    
+    x_train.reset_index(drop=True, inplace=True)
+    x_val.reset_index(drop=True, inplace=True)
+    x_test.reset_index(drop=True, inplace=True)
+    x_train.to_csv("data/training_data.csv", index = False)
+    x_val.to_csv("data/validation_data.csv", index = False)
+    x_test.to_csv("data/test_data.csv", index = False)
 
-    np.save("data/training_data.npy", x_train)
     np.save("data/training_labels.npy", y_train)
-    np.save("data/validation_data.npy", x_val)
     np.save("data/validation_labels.npy", y_val)
-    np.save("data/test_data.npy", x_test)
     np.save("data/test_labels.npy", y_test)
+
 
     return x_train, y_train, x_val, y_val
 
@@ -218,6 +223,8 @@ def create_pdls(teams_df, base_model, x_train, y_train, x_val, y_val, loss_fn):
         alpha = input("Input alpha parameter value (press Enter for default) \n\n>>> ")
         
         if alpha == "":
+            LOSS_FN = globals()[loss_fn]
+            alpha = 1e-4*abs(LOSS_FN(y_train, y_train) - LOSS_FN(y_train, base_model.predict(x_train)))
             break
         try:
             alpha = float(alpha)
@@ -231,12 +238,14 @@ def create_pdls(teams_df, base_model, x_train, y_train, x_val, y_val, loss_fn):
     team_pdl = pdl.PointerDecisionList(base_model, x_train, y_train, x_val, y_val, alpha, min_group_size = 1, loss_fn_name = loss_fn)
     shutil.rmtree("teams", ignore_errors=True)
     os.mkdir("teams")
-
+    shutil.rmtree("models", ignore_errors=True)
+    os.mkdir("models")
     for team in np.unique(teams_df["Team"]):    
         os.mkdir(f"teams/{team}")
         team_pdl.save_model(f"teams/{team}/PDL")
         np.save(f"teams/{team}/train_predictions.npy", team_pdl.train_predictions)
         np.save(f"teams/{team}/val_predictions.npy", team_pdl.val_predictions)
+        np.save(f"models/{team}/train_predictions.npy", team_pdl.train_predictions)
     os.mkdir(f"teams/global_pdl")
     team_pdl.save_model(f"teams/global_pdl/PDL")
     np.save(f"teams/global_pdl/train_predictions.npy", team_pdl.train_predictions)
@@ -304,6 +313,11 @@ def clean_up(data_path, teams_csv_path, base_model_path):
         if os.path.exists(filename):
             shutil.move(filename, f".hidden/{filename}")
 
+    shutil.rmtree("all_pairs", ignore_errors=True)
+    os.mkdir("all_pairs")
+    os.mkdir("all_pairs/groups")
+    os.mkdir("all_pairs/hypotheses")
+    
 def main():
     if os.path.isfile(".env"):
         flag = input("Installation is already completed, are you sure you want to reinstall? \n\n (Y/N) >>> ")

@@ -23,13 +23,16 @@ RUN useradd --gid 2021 $SECRET_USER
 
 RUN mkdir -p /home/$SECRET_USER
 RUN mkdir -p /home/$SECRET_USER/repo
+RUN mkdir -p /home/$SECRET_USER/.cache
+RUN chown -R $SECRET_USER:2021 /home/$SECRET_USER/.cache
 
+RUN chmod g+s /home/$SECRET_USER
 COPY ssh_key.sh /home/$SECRET_USER/ssh_key.sh
 RUN chmod +x /home/$SECRET_USER/ssh_key.sh
 RUN ./home/$SECRET_USER/ssh_key.sh
 RUN rm /home/$SECRET_USER/ssh_key.sh
 RUN mv ~/.ssh /home/$SECRET_USER/.ssh
-RUN chown -R $SECRET_USER:non-root /home/$SECRET_USER/.ssh
+RUN chown -R $SECRET_USER:2021 /home/$SECRET_USER/.ssh
 
 RUN eval "$(ssh-agent -s)" && \
     ssh-add /home/$SECRET_USER/.ssh/id_ed25519

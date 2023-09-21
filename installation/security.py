@@ -6,9 +6,16 @@ import builtins
 from contextlib import contextmanager
 from io import StringIO
 import dis
-import numpy as np
 
-x_train = np.load("/home/non-root/training_data.npy")
+import pandas as pd 
+import numpy
+import scipy
+from sklearn import *
+import xgboost
+import lightgbm
+import collections
+
+x_train = pd.read_csv("/home/non-root/training_data.csv", index_col=False)
 
 safe_builtins = [
     'range',
@@ -81,7 +88,7 @@ def security_call_1(filepath, type_model):
     try:
         with open(filepath, "rb") as file:
             item_data = file.read()
-            item = restricted_loads(item_data)
+        item = restricted_loads(item_data)
     except:
         comment = f"Model ({type_model}) could not be properly loaded with pickle, please see instructions for downloading and submitting pairs!\n"
         return comment, None
@@ -127,8 +134,8 @@ def sizecheck(obj, name):
 
 def main():
     # security call 1
-    comment_group, group = security_call_1(f"/container_tmp/group.pkl", "group")
-    comment_hypothesis, hypothesis = security_call_1(f"/tmp/hypothesis.pkl", "hypothesis")
+    comment_group, group = security_call_1(f"container_tmp/group.pkl", "group")
+    comment_hypothesis, hypothesis = security_call_1(f"container_tmp/hypothesis.pkl", "hypothesis")
 
     if comment_group or comment_hypothesis:
         return comment_group + comment_hypothesis
