@@ -1,10 +1,10 @@
 ---
  layout: default
- title: University of Pennsylvania Bias Bounties 2023
- description: CIS 4230/5230
+ title: Anonymous University Bias Bounties 2023
+ description: Anonymous Course
 ---
 
-Welcome to the first iteration of Bias Bounties brought to you by CIS 4230/5230!
+Welcome to the first iteration of Bias Bounties brought to you by Anonymous Course!
 
 The original "Bias Bounty" structure outlined in Globus-Harris etal. \[[GHKR2019](https://arxiv.org/pdf/2201.10408.pdf)\] creates a structure to reduce machine learning bias or discrimination through crowdsourcing. A competitor is rewarded when they are able to not only identify a region in which the current model performs poorly, but also creates a new predictive model which does strictly better than the biased model on the region. The amount in which a competitor is rewarded is proportional to the reduction in overall model error as well as a constant factor for finding an update.
 

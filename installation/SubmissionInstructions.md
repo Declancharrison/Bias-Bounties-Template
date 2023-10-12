@@ -2,11 +2,11 @@
 
 ## **Introduction**
 
-In this repository (and [webpage](https://declancharrison.github.io/CIS_5230_Bias_Bounty_2023/)), you will find all the tools necessary to participate in the first ever ML Bias Bounty. This repository acts as a sort of "middle man" infrastructure to connect you (competitors) to a host server containing a global PDL model. You are able to submit group-hypothesis (g,h) pairs via pull requests, and the pair is integrated into the global model per the PointerDecisionList (PDL) protocol. The remainder of the readme is dedicated to the full workflow from training your pair of functions to submitting the update request and viewing the results of the PDL Protocol. You can download the .ipynb notebook named *starter_notebook.ipynb* to follow along the procedures below.
+In this repository (and [webpage](https://{{ site.github.owner_name }}.github.io/{{ site.github.repository_name }}/)), you will find all the tools necessary to participate in the first ever ML Bias Bounty. This repository acts as a sort of "middle man" infrastructure to connect you (competitors) to a host server containing a global PDL model. You are able to submit group-hypothesis (g,h) pairs via pull requests, and the pair is integrated into the global model per the PointerDecisionList (PDL) protocol. The remainder of the readme is dedicated to the full workflow from training your pair of functions to submitting the update request and viewing the results of the PDL Protocol. You can download the .ipynb notebook named *starter_notebook.ipynb* to follow along the procedures below.
 
 ## **Downloading/Importing the data**
 
-Navigate to the project webpage [here](https://declancharrison.github.io/CIS_5230_Bias_Bounty_2023/)
+Navigate to the project webpage [here](https://{{ site.github.owner_name }}.github.io/{{ site.github.repository_name }}/)
 and click the button "Download Training Data". Extract the downloaded .zip file and place the two files titled *training_data.csv* and *training_labels.csv* in the folder you will be working in. To load the data into your python environment, you can run the following:
 ```python
 import pandas as pd

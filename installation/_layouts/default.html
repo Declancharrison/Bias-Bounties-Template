@@ -21,14 +21,13 @@
       <h2 class="project-tagline">{{ page.description | default: site.description | default: site.github.project_tagline }}</h2>
 
       {% if site.github.is_project_page %}
-        <!-- <a href="https://declancharrison.github.io/CIS_5230_Bias_Bounty_2023/"  class="btn">Homepage</a> -->
         <a href="{{ site.github.repository_url }}" class="btn">View on GitHub</a>
       {% endif %}
       {% if site.show_downloads %}
         <a href="https://drive.google.com/uc?id=1p0mN_kJzWrd_ioPYc8SfAsXFw2gdxj66&export=download"  class="btn">Download Training Data</a>
-        <a href="https://declancharrison.github.io/CIS_5230_Bias_Bounty_2023/leaderboard.html" class="btn">Leaderboard </a>
-        <a href="https://declancharrison.github.io/CIS_5230_Bias_Bounty_2023/statistics.html" class="btn">Model Statistics </a>
-        <a href="https://declancharrison.github.io/CIS_5230_Bias_Bounty_2023/PDL.html" class="btn">How Does it Work? </a>
+        <a href="https://{{ site.github.owner_name }}/{{ site.github.repository_name }}/leaderboard.html" class="btn">Leaderboard </a>
+        <a href="https://{{ site.github.owner_name }}/{{ site.github.repository_name }}/statistics.html" class="btn">Model Statistics </a>
+        <a href="https://{{ site.github.owner_name }}/{{ site.github.repository_name }}/PDL.html" class="btn">How Does it Work? </a>
 
       {% endif %}
     </header>
