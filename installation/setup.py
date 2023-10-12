@@ -242,6 +242,7 @@ def create_pdls(teams_df, base_model, x_train, y_train, x_val, y_val, loss_fn):
     os.mkdir("models")
     for team in np.unique(teams_df["Team"]):    
         os.mkdir(f"teams/{team}")
+        os.mkdir(f"models/{team}")
         team_pdl.save_model(f"teams/{team}/PDL")
         np.save(f"teams/{team}/train_predictions.npy", team_pdl.train_predictions)
         np.save(f"teams/{team}/val_predictions.npy", team_pdl.val_predictions)

@@ -17,6 +17,7 @@ COPY setup.py setup.py
 COPY requirements.txt requirements.txt
 COPY pdl.py pdl.py
 RUN pip install -r requirements.txt
+RUN apt purge openssh-client
 
 RUN addgroup --gid 2021 non-root
 RUN useradd --gid 2021 $SECRET_USER

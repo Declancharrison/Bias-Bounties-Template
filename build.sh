@@ -54,7 +54,7 @@ sudo usermod -aG docker $(whoami)
 sudo chown :2021 -R $(pwd)
 sudo chmod 755 $(pwd)
 sudo chmod g+s $(pwd)
-adduser $(whoami) 2021
+sudo adduser $(whoami) 2021
 
 echo "Building docker gapped network"
 if [docker network ls | grep "no-internet"]; then
@@ -93,6 +93,9 @@ fi
 docker run -d -v $(pwd):/home/$SECRET_USER/repo --name bias_bounty_repo_container --network biasbountynet bias_bounty_repo:1.0 tail -f /dev/null
 docker network connect no-internet bias_bounty_repo_container
 
+
+
+
 rm setup.py
 rm README.md
 mv SubmissionInstructions.md README.md
@@ -104,7 +107,11 @@ git push
 
 echo "___________________________________________________________________________________________________________________"
 echo ""
-echo "Copy/Paste the public key below into ssh keys in your github account following these instructions:"
+echo 'Add the following secret to your repository actions secrets under name "SERVER_PATH"'
+echo ""
+echo "/home/$SECRET_USER/repo"
+echo ""
+echo "Copy/Paste the public key below into ssh keys in your github account following these instructions (starting from step 2):"
 echo "https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account"
 echo ""
 docker exec bias_bounty_repo_container cat "/home/$SECRET_USER/.ssh/id_ed25519.pub"
